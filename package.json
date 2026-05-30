@@ -1,0 +1,32 @@
+{
+  "name": "obsidian-share-hosted",
+  "version": "0.1.0",
+  "description": "Hosted alternative to obsidian-org-share: sign in with email, share Obsidian notes with org / allowlist / public audiences. No Cloudflare setup required.",
+  "license": "MIT",
+  "author": "Yuto Takagi",
+  "repository": { "type": "git", "url": "https://github.com/yut0takagi/obsidian-share-hosted.git" },
+  "homepage": "https://github.com/yut0takagi/obsidian-share-hosted#readme",
+  "bugs": "https://github.com/yut0takagi/obsidian-share-hosted/issues",
+  "keywords": ["obsidian", "obsidian-plugin", "share", "hosted", "magic-link"],
+  "private": false,
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "node esbuild.config.mjs production",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "esbuild": "^0.20.0",
+    "obsidian": "latest",
+    "typescript": "^5.3.0",
+    "vitest": "^1.2.0"
+  },
+  "dependencies": {
+    "markdown-it": "^14.1.0",
+    "markdown-it-footnote": "^4.0.0",
+    "markdown-it-task-lists": "^2.1.1",
+    "markdown-it-anchor": "^9.0.1",
+    "@types/markdown-it": "^14.0.0"
+  }
+}

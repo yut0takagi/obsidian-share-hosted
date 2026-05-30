@@ -1,0 +1,6 @@
+/* share-hosted plugin styles */
+.share-hosted-modal-buttons { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem; }
+.share-hosted-modal-buttons button { cursor: pointer; }
+.share-hosted-url-row { margin: 1rem 0; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+.share-hosted-url-row a { word-break: break-all; }
+.share-hosted-signin-status { margin: 0.5rem 0 1.5rem 0; color: var(--text-muted); }
