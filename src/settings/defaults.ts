@@ -7,7 +7,6 @@ export const DEFAULT_SETTINGS: ShareHostedSettings = {
   signedInEmail: '',
   ownerName: '',
   serverOrg: null,
-  pendingSignIn: null,
   defaultExpiry: '7d',
   defaultMode: 'org',
 }

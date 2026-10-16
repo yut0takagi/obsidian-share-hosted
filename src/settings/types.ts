@@ -8,8 +8,8 @@ export interface ShareHostedSettings {
   ownerName: string
   /** Org-wide audience as reported by the Worker's /auth/me; null with a 0.1.0 Worker. */
   serverOrg: { domain: string; available: boolean } | null
-  /** A sign-in started on this device that has not come back yet. */
-  pendingSignIn: PendingSignIn | null
+  /** Sign-ins started on this device, only where Obsidian lacks SecretStorage. See PendingStore. */
+  pendingSignIns?: PendingSignIn[]
   defaultExpiry: '1d' | '7d' | '30d' | 'never'
   defaultMode: 'org' | 'list' | 'public'
 }

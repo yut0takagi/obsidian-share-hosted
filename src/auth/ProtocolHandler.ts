@@ -5,13 +5,13 @@ import { evaluateAuthCallback } from './callback'
 
 export function registerAuthCallback(plugin: ShareHostedPlugin): void {
   plugin.registerObsidianProtocolHandler('share-hosted/auth-callback', async (params) => {
-    const result = evaluateAuthCallback(params, plugin.settings.pendingSignIn, Date.now())
+    const result = evaluateAuthCallback(params, plugin.pending.get(), Date.now())
     if (!result.ok) {
       // The token is not stored: only the sign-in started from this device may complete.
       new Notice(result.message, 10000)
       return
     }
-    plugin.settings.pendingSignIn = null
+    await plugin.pending.clear()
     plugin.settings.signedInEmail = result.email
     plugin.settings.serverOrg = null
     await plugin.saveSettings()

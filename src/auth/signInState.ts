@@ -9,6 +9,8 @@ export interface PendingSignIn {
 
 // The emailed link lives 15 minutes; allow a little more for slow mail.
 export const PENDING_SIGN_IN_TTL_MS = 20 * 60 * 1000
+// Several requests can be in flight (e.g. "Send" pressed twice); any of their links may be used.
+export const MAX_PENDING_SIGN_INS = 5
 
 export const AUTH_CALLBACK = 'obsidian://share-hosted/auth-callback'
 
@@ -38,9 +40,18 @@ function sameString(a: string, b: string): boolean {
 
 export type StateCheck = 'ok' | 'not_started' | 'mismatch' | 'expired'
 
-export function checkCallbackState(pending: PendingSignIn | null, received: string | undefined, now: number): StateCheck {
-  if (!pending || !pending.state) return 'not_started'
-  if (!received || !sameString(pending.state, received)) return 'mismatch'
-  if (now - pending.createdAt > PENDING_SIGN_IN_TTL_MS) return 'expired'
-  return 'ok'
+const isFresh = (p: PendingSignIn, now: number) => now - p.createdAt <= PENDING_SIGN_IN_TTL_MS
+
+export function checkCallbackState(pending: PendingSignIn[], received: string | undefined, now: number): StateCheck {
+  const known = pending.filter((p) => p && p.state)
+  if (known.length === 0) return 'not_started'
+  if (!received) return 'mismatch'
+  const match = known.find((p) => sameString(p.state, received))
+  if (!match) return 'mismatch'
+  return isFresh(match, now) ? 'ok' : 'expired'
+}
+
+/** Adds a request the Worker accepted, dropping expired ones and keeping the newest few. */
+export function rememberPending(pending: PendingSignIn[], added: PendingSignIn, now: number): PendingSignIn[] {
+  return [...pending.filter((p) => isFresh(p, now)), added].slice(-MAX_PENDING_SIGN_INS)
 }

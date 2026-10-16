@@ -3,7 +3,7 @@ import { callbackUrlFor, checkCallbackState, type PendingSignIn } from './signIn
 export type CallbackResult = { ok: true; token: string; email: string } | { ok: false; message: string }
 
 /** Decides whether an obsidian://share-hosted/auth-callback may sign this plugin in. */
-export function evaluateAuthCallback(params: Record<string, string | undefined>, pending: PendingSignIn | null, now: number): CallbackResult {
+export function evaluateAuthCallback(params: Record<string, string | undefined>, pending: PendingSignIn[], now: number): CallbackResult {
   const token = params.api_token
   const email = params.email
   if (!token || !email) return { ok: false, message: 'Sign-in failed: the link was incomplete.' }

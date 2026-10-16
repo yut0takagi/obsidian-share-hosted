@@ -4,6 +4,7 @@ import type { ShareHostedSettings } from './src/settings/types'
 import { ShareHostedSettingsTab } from './src/settings/SettingsTab'
 import { registerAuthCallback } from './src/auth/ProtocolHandler'
 import { TokenStore, getSecretStorage } from './src/auth/TokenStore'
+import { PendingStore } from './src/auth/PendingStore'
 import { shareNoteCommand } from './src/commands/shareNote'
 import { copyShareUrlCommand } from './src/commands/copyShareUrl'
 import { stopSharingCommand } from './src/commands/stopSharing'
@@ -11,9 +12,12 @@ import { stopSharingCommand } from './src/commands/stopSharing'
 export default class ShareHostedPlugin extends Plugin {
   settings!: ShareHostedSettings
   tokens!: TokenStore
+  pending!: PendingStore
   async onload() {
     await this.loadSettings()
-    this.tokens = new TokenStore(getSecretStorage(this.app), this.settings, () => this.saveSettings())
+    const secrets = getSecretStorage(this.app)
+    this.tokens = new TokenStore(secrets, this.settings, () => this.saveSettings())
+    this.pending = new PendingStore(secrets, this.settings, () => this.saveSettings())
     if (await this.tokens.migrate()) console.log('[share-hosted] moved the session token from data.json to SecretStorage')
     this.addSettingTab(new ShareHostedSettingsTab(this.app, this))
     registerAuthCallback(this)

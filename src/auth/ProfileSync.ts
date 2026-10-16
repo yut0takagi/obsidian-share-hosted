@@ -47,8 +47,8 @@ async function clearLocalSession(plugin: ShareHostedPlugin): Promise<void> {
   plugin.settings.signedInEmail = ''
   plugin.settings.ownerName = ''
   plugin.settings.serverOrg = null
-  plugin.settings.pendingSignIn = null
   await plugin.saveSettings()
+  await plugin.pending.clear()
 }
 
 export async function signOut(plugin: ShareHostedPlugin): Promise<void> {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { newPendingSignIn, callbackUrlFor, checkCallbackState, PENDING_SIGN_IN_TTL_MS } from '../src/auth/signInState'
+import { newPendingSignIn, callbackUrlFor, checkCallbackState, rememberPending, PENDING_SIGN_IN_TTL_MS, MAX_PENDING_SIGN_INS } from '../src/auth/signInState'
 
 const NOW = 1_800_000_000_000
 
@@ -22,26 +22,48 @@ describe('callbackUrlFor', () => {
 })
 
 describe('checkCallbackState', () => {
-  const pending = { state: 'abcdefghijklmnopqrstuvwxyz012345', createdAt: NOW }
+  const first = { state: 'abcdefghijklmnopqrstuvwxyz012345', createdAt: NOW }
+  const second = { state: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ987654', createdAt: NOW + 30_000 }
 
   it('accepts the state this device started with', () => {
-    expect(checkCallbackState(pending, pending.state, NOW + 60_000)).toBe('ok')
+    expect(checkCallbackState([first], first.state, NOW + 60_000)).toBe('ok')
+  })
+
+  it('still accepts the first link after a second one was requested', () => {
+    expect(checkCallbackState([first, second], first.state, NOW + 60_000)).toBe('ok')
+    expect(checkCallbackState([first, second], second.state, NOW + 60_000)).toBe('ok')
   })
 
   it('rejects a callback when no sign-in was started here', () => {
-    expect(checkCallbackState(null, pending.state, NOW)).toBe('not_started')
+    expect(checkCallbackState([], first.state, NOW)).toBe('not_started')
   })
 
   it('rejects a callback without state', () => {
-    expect(checkCallbackState(pending, undefined, NOW)).toBe('mismatch')
-    expect(checkCallbackState(pending, '', NOW)).toBe('mismatch')
+    expect(checkCallbackState([first], undefined, NOW)).toBe('mismatch')
+    expect(checkCallbackState([first], '', NOW)).toBe('mismatch')
   })
 
   it('rejects a different state', () => {
-    expect(checkCallbackState(pending, 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz', NOW)).toBe('mismatch')
+    expect(checkCallbackState([first], 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz', NOW)).toBe('mismatch')
   })
 
   it('rejects a sign-in started too long ago', () => {
-    expect(checkCallbackState(pending, pending.state, NOW + PENDING_SIGN_IN_TTL_MS + 1)).toBe('expired')
+    expect(checkCallbackState([first], first.state, NOW + PENDING_SIGN_IN_TTL_MS + 1)).toBe('expired')
+  })
+})
+
+describe('rememberPending', () => {
+  it('adds the new request and drops expired ones', () => {
+    const old = { state: 'o'.repeat(32), createdAt: NOW - PENDING_SIGN_IN_TTL_MS - 1 }
+    const fresh = { state: 'f'.repeat(32), createdAt: NOW - 1000 }
+    const next = { state: 'n'.repeat(32), createdAt: NOW }
+    expect(rememberPending([old, fresh], next, NOW)).toEqual([fresh, next])
+  })
+
+  it(`keeps at most ${MAX_PENDING_SIGN_INS}`, () => {
+    let list: { state: string; createdAt: number }[] = []
+    for (let i = 0; i < MAX_PENDING_SIGN_INS + 2; i++) list = rememberPending(list, { state: `s${i}`.padEnd(32, 'x'), createdAt: NOW + i }, NOW + i)
+    expect(list).toHaveLength(MAX_PENDING_SIGN_INS)
+    expect(list[list.length - 1].state.startsWith(`s${MAX_PENDING_SIGN_INS + 1}`)).toBe(true)
   })
 })
