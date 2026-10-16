@@ -8,7 +8,7 @@ const pendingList = [pending]
 describe('evaluateAuthCallback', () => {
   it('accepts a callback for the sign-in started on this device', () => {
     expect(evaluateAuthCallback({ api_token: 's_tok', email: 'alice@example.com', state: pending.state }, pendingList, NOW))
-      .toEqual({ ok: true, token: 's_tok', email: 'alice@example.com' })
+      .toEqual({ ok: true, kind: 'token', token: 's_tok', email: 'alice@example.com' })
   })
 
   it('refuses a callback without a pending sign-in (e.g. a link someone sent)', () => {
@@ -33,6 +33,17 @@ describe('evaluateAuthCallback', () => {
   it('explains each refusal', () => {
     const r = evaluateAuthCallback({ api_token: 's_tok', email: 'alice@example.com', state: 'x' }, pendingList, NOW)
     expect(r.ok === false && r.message).toMatch(/sign-in/i)
+  })
+})
+
+describe('evaluateAuthCallback with a one-time code (0.2.0 Worker)', () => {
+  it('accepts a code for a sign-in started here, to be exchanged', () => {
+    expect(evaluateAuthCallback({ code: 'c_abc', state: pending.state }, pendingList, NOW))
+      .toEqual({ ok: true, kind: 'code', code: 'c_abc', state: pending.state })
+  })
+
+  it('refuses a code with an unknown state', () => {
+    expect(evaluateAuthCallback({ code: 'c_abc', state: 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz' }, pendingList, NOW).ok).toBe(false)
   })
 })
 

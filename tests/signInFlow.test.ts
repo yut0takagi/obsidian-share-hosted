@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 const requestUrl = vi.fn()
 vi.mock('obsidian', () => ({ requestUrl: (p: unknown) => requestUrl(p) }))
 
-const { requestMagicLink } = await import('../src/auth/SignInFlow')
+const { requestMagicLink, exchangeCode } = await import('../src/auth/SignInFlow')
 const { PendingStore } = await import('../src/auth/PendingStore')
 
 function fakePlugin() {
@@ -40,5 +40,23 @@ describe('requestMagicLink', () => {
     await requestMagicLink(plugin, 'alice@example.com')
     await requestMagicLink(plugin, 'alice@example.com')
     expect(plugin.pending.get()).toHaveLength(2)
+  })
+})
+
+describe('exchangeCode', () => {
+  it('trades the code and state for the session token', async () => {
+    const plugin = fakePlugin()
+    requestUrl.mockResolvedValue({ status: 200, text: JSON.stringify({ api_token: 's_tok', email: 'alice@example.com' }) })
+    expect(await exchangeCode(plugin, 'c_abc', 'st_state_value_0123456789')).toEqual({ token: 's_tok', email: 'alice@example.com' })
+    const call = requestUrl.mock.calls[0][0]
+    expect(call.url).toBe('https://w.example/auth/exchange')
+    expect(call.method).toBe('POST')
+    expect(JSON.parse(call.body)).toEqual({ code: 'c_abc', state: 'st_state_value_0123456789' })
+  })
+
+  it('throws the Worker message when the code is no longer valid', async () => {
+    const plugin = fakePlugin()
+    requestUrl.mockResolvedValue({ status: 400, text: JSON.stringify({ error: 'invalid_code', message: 'This sign-in has expired.' }) })
+    await expect(exchangeCode(plugin, 'c_abc', 'st_state_value_0123456789')).rejects.toThrow('This sign-in has expired.')
   })
 })

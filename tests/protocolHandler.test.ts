@@ -6,6 +6,8 @@ import { newPendingSignIn } from '../src/auth/signInState'
 import { PendingStore } from '../src/auth/PendingStore'
 
 vi.mock('../src/auth/ProfileSync', () => ({ syncProfile: vi.fn(async () => {}) }))
+const exchangeCode = vi.fn(async (_plugin: unknown, _code: string, _state: string) => ({ token: 's_from_code', email: 'alice@example.com' }))
+vi.mock('../src/auth/SignInFlow', () => ({ exchangeCode: (...a: [unknown, string, string]) => exchangeCode(...a) }))
 
 function fakePlugin() {
   const secrets = new Map<string, string>()
@@ -53,4 +55,23 @@ describe('auth callback wiring', () => {
     expect(plugin.settings.signedInEmail).toBe('')
     expect(plugin.pending.get()).toHaveLength(1)
   })
+
+  it('exchanges a one-time code for the token', async () => {
+    const { plugin, call } = fakePlugin()
+    const p = newPendingSignIn(Date.now())
+    await plugin.pending.set([p])
+    await call({ action: 'share-hosted/auth-callback', code: 'c_abc', state: p.state })
+    expect(exchangeCode).toHaveBeenCalledWith(plugin, 'c_abc', p.state)
+    expect(plugin.tokens.get()).toBe('s_from_code')
+    expect(plugin.settings.signedInEmail).toBe('alice@example.com')
+  })
+
+  it('does not exchange a code for a sign-in this device did not start', async () => {
+    exchangeCode.mockClear()
+    const { plugin, call } = fakePlugin()
+    await call({ action: 'share-hosted/auth-callback', code: 'c_abc', state: 'abcdefghijklmnopqrstuvwxyz012345' })
+    expect(exchangeCode).not.toHaveBeenCalled()
+    expect(plugin.tokens.get()).toBe('')
+  })
 })
+

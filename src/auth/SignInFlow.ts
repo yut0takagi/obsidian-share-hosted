@@ -21,3 +21,21 @@ export async function requestMagicLink(plugin: ShareHostedPlugin, email: string)
   // Remembered so the callback can prove it answers a request from this device.
   await plugin.pending.set(rememberPending(plugin.pending.get(), pending, Date.now()))
 }
+
+/** Trades the one-time code from the callback (0.2.0 Worker) for the session token. */
+export async function exchangeCode(plugin: ShareHostedPlugin, code: string, state: string): Promise<{ token: string; email: string }> {
+  const res = await requestUrl({
+    url: `${plugin.settings.workerUrl}/auth/exchange`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code, state }),
+    throw: false,
+  })
+  if (res.status !== 200) {
+    let message = `Sign-in failed (${res.status}). Send a new link from Settings → Share Hosted.`
+    try { message = (JSON.parse(res.text) as { message?: string }).message || message } catch { /* plain text */ }
+    throw new Error(message)
+  }
+  const body = JSON.parse(res.text) as { api_token: string; email: string }
+  return { token: body.api_token, email: body.email }
+}
