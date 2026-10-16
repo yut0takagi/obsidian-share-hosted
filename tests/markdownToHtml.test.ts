@@ -37,3 +37,45 @@ describe('markdownToHtml', () => {
     expect(out).toContain('info text')
   })
 })
+
+describe('markdownToHtml: Obsidian image embeds', () => {
+  it('renders ![[image.png]] as an <img> without the "!"', () => {
+    const out = markdownToHtml('Look: ![[photo.png]]')
+    expect(out).toContain('<img src="photo.png" alt="photo.png">')
+    expect(out).not.toContain('!')
+    expect(out).not.toContain('wikilink-dead')
+  })
+
+  it('percent-encodes the path so the uploader can resolve names with spaces', () => {
+    expect(markdownToHtml('![[Pasted image 20240101.png]]')).toContain('src="Pasted%20image%2020240101.png"')
+    expect(markdownToHtml('![[assets/a&b.jpg]]')).toContain('src="assets/a%26b.jpg"')
+  })
+
+  it('applies Obsidian size modifiers', () => {
+    expect(markdownToHtml('![[photo.png|300]]')).toContain('<img src="photo.png" alt="photo.png" width="300">')
+    expect(markdownToHtml('![[photo.png|300x200]]')).toContain('width="300" height="200"')
+  })
+
+  it('uses other modifiers as alt text, escaped', () => {
+    expect(markdownToHtml('![[photo.png|A "quoted" diagram]]')).toContain('alt="A &quot;quoted&quot; diagram"')
+  })
+
+  it('handles upper-case extensions and #anchors', () => {
+    expect(markdownToHtml('![[Shot.JPG#center]]')).toContain('<img src="Shot.JPG" alt="Shot.JPG">')
+  })
+
+  it('shows other embeds (notes, PDF) as plain text without the "!"', () => {
+    const note = markdownToHtml('![[Other Note]]')
+    expect(note).toContain('<span class="wikilink-dead">Other Note</span>')
+    expect(note).not.toContain('!')
+    expect(markdownToHtml('![[paper.pdf]]')).toContain('<span class="wikilink-dead">paper.pdf</span>')
+  })
+
+  it('renders SVG embeds as images', () => {
+    expect(markdownToHtml('![[diagram.svg]]')).toContain('<img src="diagram.svg" alt="diagram.svg">')
+  })
+
+  it('leaves standard Markdown images alone', () => {
+    expect(markdownToHtml('![alt](pic.png)')).toContain('<img src="pic.png" alt="alt">')
+  })
+})

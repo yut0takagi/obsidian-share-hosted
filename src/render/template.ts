@@ -20,13 +20,12 @@ export function renderFullHtml(input: TemplateInput): string {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>${escapeHtml(title)}</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>${BASE_CSS}</style>
+<style>${RESET_CSS}${LAYOUT_CSS}${BASE_CSS}</style>
 </head>
-<body class="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100">
-<article class="mx-auto max-w-2xl px-6 py-12">
-  <header class="mb-10 pb-6 border-b border-neutral-200 dark:border-neutral-800">
-    <div class="text-sm text-neutral-500 dark:text-neutral-400 flex flex-wrap gap-x-2 gap-y-1">
+<body>
+<article class="page">
+  <header class="page-header">
+    <div class="page-meta">
       <span>Shared by ${escapeHtml(ownerName)}</span>
       <span class="meta-sep">·</span>
       <span>${created}</span>
@@ -36,13 +35,47 @@ export function renderFullHtml(input: TemplateInput): string {
   <main class="prose-content">
     ${bodyHtml}
   </main>
-  <footer class="mt-16 pt-6 border-t border-neutral-200 dark:border-neutral-800 text-xs text-neutral-400">
-    Powered by org-share
+  <footer class="page-footer">
+    Shared with Share Hosted
   </footer>
 </article>
 </body>
 </html>`
 }
+
+// The page is self-contained: the Worker serves it with a CSP that allows no scripts, so the
+// Tailwind CDN that 0.1.0 used is gone. RESET_CSS and LAYOUT_CSS reproduce what it provided.
+const RESET_CSS = `
+*, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #e5e7eb; }
+html { line-height: 1.5; -webkit-text-size-adjust: 100%; tab-size: 4; }
+body { margin: 0; line-height: inherit; }
+hr { height: 0; color: inherit; border-top-width: 1px; }
+h1, h2, h3, h4, h5, h6 { font-size: inherit; font-weight: inherit; }
+a { color: inherit; text-decoration: inherit; }
+b, strong { font-weight: bolder; }
+code, kbd, samp, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 1em; }
+sub, sup { font-size: 75%; line-height: 0; position: relative; vertical-align: baseline; }
+sub { bottom: -0.25em; } sup { top: -0.5em; }
+table { text-indent: 0; border-color: inherit; border-collapse: collapse; }
+blockquote, dl, dd, h1, h2, h3, h4, h5, h6, hr, figure, p, pre { margin: 0; }
+ol, ul, menu { list-style: none; margin: 0; padding: 0; }
+img, svg, video { display: block; vertical-align: middle; }
+img, video { max-width: 100%; height: auto; }
+input { font-family: inherit; font-size: 100%; margin: 0; padding: 0; color: inherit; }
+`
+
+const LAYOUT_CSS = `
+body { background: #fff; color: #171717; }
+.page { max-width: 42rem; margin: 0 auto; padding: 3rem 1.5rem; }
+.page-header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #e5e5e5; }
+.page-meta { display: flex; flex-wrap: wrap; column-gap: 0.5rem; row-gap: 0.25rem; font-size: 0.875rem; line-height: 1.25rem; color: #737373; }
+.page-footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid #e5e5e5; font-size: 0.75rem; line-height: 1rem; color: #a3a3a3; }
+@media (prefers-color-scheme: dark) {
+  body { background: #171717; color: #f5f5f5; }
+  .page-header, .page-footer { border-color: #262626; }
+  .page-meta { color: #a3a3a3; }
+}
+`
 
 const BASE_CSS = `
 :root { font-family: Inter, system-ui, -apple-system, "Hiragino Sans", sans-serif; }

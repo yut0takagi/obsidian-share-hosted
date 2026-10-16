@@ -1,6 +1,6 @@
 {
   "name": "obsidian-share-hosted",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Hosted alternative to obsidian-org-share: sign in with email, share Obsidian notes with org / allowlist / public audiences. No Cloudflare setup required.",
   "license": "MIT",
   "author": "Yuto Takagi",
