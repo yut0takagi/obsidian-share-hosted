@@ -35,7 +35,7 @@ describe('modalDefaults', () => {
   })
 
   it('does not pre-select org mode when it is unavailable', () => {
-    const gmail = orgTarget('gina@gmail.com')
+    const gmail = orgTarget('freemail-test-user@gmail.com')
     expect(modalDefaults({ info: null, existingMode: null, settings, org: gmail, now: NOW }).mode).toBe('list')
   })
 })

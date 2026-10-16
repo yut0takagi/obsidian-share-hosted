@@ -25,7 +25,7 @@ describe('orgTarget', () => {
   })
 
   it('is unavailable for free mail, with a reason', () => {
-    const t = orgTarget('gina@gmail.com')
+    const t = orgTarget('freemail-test-user@gmail.com')
     expect(t.available).toBe(false)
     expect(t.label).toBe('')
     expect(t.reason).toContain('@gmail.com')
@@ -45,9 +45,9 @@ describe('effectiveDefaultMode', () => {
     expect(effectiveDefaultMode('org', orgTarget('alice@example.com'))).toBe('org')
   })
   it('falls back to specific people when org is not available', () => {
-    expect(effectiveDefaultMode('org', orgTarget('gina@gmail.com'))).toBe('list')
+    expect(effectiveDefaultMode('org', orgTarget('freemail-test-user@gmail.com'))).toBe('list')
   })
   it('leaves other modes alone', () => {
-    expect(effectiveDefaultMode('public', orgTarget('gina@gmail.com'))).toBe('public')
+    expect(effectiveDefaultMode('public', orgTarget('freemail-test-user@gmail.com'))).toBe('public')
   })
 })

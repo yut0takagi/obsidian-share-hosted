@@ -6,13 +6,13 @@ describe('renderFullHtml', () => {
     const out = renderFullHtml({
       title: 'My Note',
       bodyHtml: '<p>body</p>',
-      ownerName: 'Takagi',
+      ownerName: 'Alice',
       createdAt: '2026-05-30T17:00:00Z',
       expiresAt: '2026-06-06T17:00:00Z',
     })
     expect(out).toContain('<title>My Note</title>')
     expect(out).toContain('<p>body</p>')
-    expect(out).toContain('Shared by Takagi')
+    expect(out).toContain('Shared by Alice')
     expect(out).toContain('Expires')
     expect(out).toContain('noindex, nofollow')
   })
