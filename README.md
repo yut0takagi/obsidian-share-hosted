@@ -33,7 +33,7 @@ Re-sharing a note opens the dialog with its current audience and expiry. Recipie
 addresses are kept on the server, not in the note's frontmatter.
 
 Images embedded with `![[image.png]]` or `![](image.png)` are uploaded with the note
-(PNG, JPEG, GIF, WebP up to 20 MB). SVG files are not uploaded.
+(PNG, JPEG, GIF, WebP, SVG up to 20 MB).
 
 ## Privacy and security
 
@@ -43,8 +43,14 @@ Images embedded with `![[image.png]]` or `![](image.png)` are uploaded with the 
   plugin's `data.json`, so it does not travel with your vault through sync or git. On older
   Obsidian versions it stays in `data.json` as before. Sessions last 30 days.
 - The sign-in link opens a confirmation page first, and only a sign-in started from this
-  device is accepted. "Sign out everywhere" in settings ends all your sessions.
+  device is accepted. Obsidian receives a short-lived one-time code and trades it for the
+  session, so the session itself never appears in a link or your browser history.
+  "Sign out everywhere" in settings ends all your sessions.
 - Shared pages run no scripts and stopping a share also deletes images no other note uses.
+- Images are served from a URL derived from the image's content. That URL is not tied to the
+  note's audience: anyone who has it can open the image, even for org-wide or
+  specific-people notes. This has been the design since 0.1.0; avoid sharing images you
+  could not show to someone who gets hold of the link.
 - Companion worker source: [obsidian-share-hosted-worker](https://github.com/yut0takagi/obsidian-share-hosted-worker).
 
 ## Status
