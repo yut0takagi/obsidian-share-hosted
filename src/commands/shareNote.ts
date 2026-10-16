@@ -42,8 +42,9 @@ async function runShareFlow(app: App, settings: ShareHostedSettings, file: TFile
 
     const raw = await app.vault.read(file)
     const bodyHtml = markdownToHtml(raw)
-    const imgMap = await uploader.uploadImagesIn(bodyHtml, file.path)
+    const { map: imgMap, skipped } = await uploader.uploadImagesIn(bodyHtml, file.path)
     const bodyWithImages = ImageUploader.rewriteImageSrcs(bodyHtml, imgMap)
+    if (skipped.length) new Notice(`Not uploaded (SVG or over 20 MB): ${skipped.join(', ')}`, 8000)
 
     const titleMatch = raw.match(/^#\s+(.+)$/m)
     const title = titleMatch ? titleMatch[1].trim() : file.basename

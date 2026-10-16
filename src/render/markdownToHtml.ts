@@ -25,6 +25,47 @@ function obsidianWikilinks(md: MarkdownIt): void {
   })
 }
 
+// Image types the Worker stores. Other embeds (notes, SVG, PDF, ...) render as plain text.
+const EMBED_IMAGE_RE = /\.(png|jpe?g|gif|webp)$/i
+const SIZE_RE = /^(\d+)(?:x(\d+))?$/
+
+function encodeVaultPath(path: string): string {
+  return path.split('/').map(encodeURIComponent).join('/')
+}
+
+function obsidianEmbeds(md: MarkdownIt): void {
+  md.inline.ruler.before('image', 'wikiembed', (state, silent) => {
+    const start = state.pos
+    if (state.src.slice(start, start + 3) !== '![[') return false
+    const end = state.src.indexOf(']]', start + 3)
+    if (end === -1) return false
+    if (silent) return true
+
+    const [rawTarget, ...mods] = state.src.slice(start + 3, end).split('|').map((s) => s.trim())
+    const target = rawTarget.replace(/#.*$/, '')
+    const token = state.push('html_inline', '', 0)
+
+    if (EMBED_IMAGE_RE.test(target)) {
+      const name = target.split('/').pop() || target
+      let alt = name
+      let size = ''
+      for (const m of mods) {
+        const s = m.match(SIZE_RE)
+        if (s) size = ` width="${s[1]}"${s[2] ? ` height="${s[2]}"` : ''}`
+        else if (m) alt = m
+      }
+      const esc = md.utils.escapeHtml
+      // ImageUploader resolves this vault path and swaps in the uploaded /a/ URL.
+      token.content = `<img src="${esc(encodeVaultPath(target))}" alt="${esc(alt)}"${size}>`
+    } else {
+      const display = mods.find((m) => m && !SIZE_RE.test(m)) || rawTarget
+      token.content = `<span class="wikilink-dead">${md.utils.escapeHtml(display)}</span>`
+    }
+    state.pos = end + 2
+    return true
+  })
+}
+
 function obsidianCallouts(md: MarkdownIt): void {
   const defaultRender =
     md.renderer.rules.blockquote_open ||
@@ -58,6 +99,7 @@ function getMd(): MarkdownIt {
   md.use(footnote)
   md.use(taskLists, { enabled: false, label: true })
   md.use(anchor, { permalink: false })
+  md.use(obsidianEmbeds)
   md.use(obsidianWikilinks)
   md.use(obsidianCallouts)
   cached = md
