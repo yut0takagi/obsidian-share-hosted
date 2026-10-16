@@ -75,7 +75,8 @@ export class ApiClient {
       headers: { 'Authorization': `Bearer ${this.sessionToken}` },
       throw: false,
     })
-    if (res.status >= 300 && res.status !== 404) throw errorFrom('unshare', res.status, res.text)
+    // The Worker answers 204 even for shares it no longer has, so a 404 means something else is wrong.
+    if (res.status >= 300) throw errorFrom('unshare', res.status, res.text)
   }
 
   async uploadAsset(body: ArrayBuffer, hash: string, ext: string, contentType: string): Promise<AssetResponse> {

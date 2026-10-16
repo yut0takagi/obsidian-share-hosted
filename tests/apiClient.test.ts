@@ -35,3 +35,17 @@ describe('ApiClient.share', () => {
     expect(err.message).toContain('share not found')
   })
 })
+
+describe('ApiClient.unshare', () => {
+  it('treats 204 as stopped', async () => {
+    requestUrl.mockResolvedValue({ status: 204, text: '' })
+    await expect(new ApiClient('https://w.example', 's_tok').unshare('u1')).resolves.toBeUndefined()
+  })
+
+  it('reports 404 as a failure instead of claiming the share stopped', async () => {
+    requestUrl.mockResolvedValue({ status: 404, text: 'Not Found' })
+    const err = await new ApiClient('https://w.example', 's_tok').unshare('u1').catch((e) => e)
+    expect(err).toBeInstanceOf(ApiError)
+    expect(err.status).toBe(404)
+  })
+})
