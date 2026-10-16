@@ -1,7 +1,7 @@
 {
   "id": "share-hosted",
   "name": "Share Hosted",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "minAppVersion": "1.4.0",
   "description": "Hosted alternative to org-share: sign in with email, share notes with org / allowlist / public audiences. No Cloudflare setup required.",
   "author": "Yuto Takagi",
