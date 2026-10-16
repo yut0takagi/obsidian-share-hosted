@@ -28,3 +28,21 @@ describe('renderFullHtml', () => {
     expect(out).not.toContain('Expires')
   })
 })
+
+describe('renderFullHtml: self-contained page', () => {
+  const out = renderFullHtml({ title: 'X', bodyHtml: '<p>b</p>', ownerName: 'alice', createdAt: '2026-05-30T17:00:00Z', expiresAt: null })
+
+  it('loads no scripts (the Worker serves pages with a script-free CSP)', () => {
+    expect(out).not.toContain('<script')
+    expect(out).not.toContain('tailwind')
+  })
+
+  it('carries its layout as inline CSS', () => {
+    expect(out).toMatch(/<style>[\s\S]*max-width: 42rem[\s\S]*<\/style>/)
+  })
+
+  it('names the product in the footer', () => {
+    expect(out).toContain('Shared with Share Hosted')
+    expect(out).not.toContain('org-share')
+  })
+})

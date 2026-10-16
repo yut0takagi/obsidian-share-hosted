@@ -93,6 +93,7 @@ export function applyShareMeta(md: string, meta: ShareMeta): string {
   const newKeys = [
     `share_url: ${meta.url}`,
     `share_mode: ${meta.mode}`,
+    `share_updated_at: ${meta.updated_at}`,
   ]
 
   if (!m) {

@@ -56,7 +56,7 @@ describe('applyShareMeta', () => {
     const md = 'Hello body'
     const meta: ShareMeta = { uuid: 'abc', mode: 'public', url: 'https://x/p/abc', updated_at: '2026-05-30T17:00:00Z' }
     const out = applyShareMeta(md, meta)
-    expect(out).toMatch(/^---\nshare_url: https:\/\/x\/p\/abc\nshare_mode: public\n---\n/)
+    expect(out).toMatch(/^---\nshare_url: https:\/\/x\/p\/abc\nshare_mode: public\nshare_updated_at: 2026-05-30T17:00:00Z\n---\n/)
     expect(out).toContain('Hello body')
   })
 
@@ -133,5 +133,22 @@ share_mode: public
 ---
 Body`
     expect(removeShareMeta(md)).toBe('Body')
+  })
+})
+
+describe('share_updated_at', () => {
+  it('is written and read back', () => {
+    const meta: ShareMeta = { uuid: 'abc', mode: 'public', url: 'https://x/p/abc', updated_at: '2026-10-16T09:30:00.000Z' }
+    const out = applyShareMeta('---\ntitle: foo\n---\nBody', meta)
+    expect(out).toContain('share_updated_at: 2026-10-16T09:30:00.000Z')
+    expect(parseShareMeta(out)?.updated_at).toBe('2026-10-16T09:30:00.000Z')
+  })
+
+  it('is replaced on update and removed when sharing stops', () => {
+    const first = applyShareMeta('Body', { uuid: 'a', mode: 'org', url: 'https://x/n/a', updated_at: '2026-01-01T00:00:00.000Z' })
+    const second = applyShareMeta(first, { uuid: 'a', mode: 'org', url: 'https://x/n/a', updated_at: '2026-02-01T00:00:00.000Z' })
+    expect(second.match(/share_updated_at/g)).toHaveLength(1)
+    expect(second).toContain('2026-02-01T00:00:00.000Z')
+    expect(removeShareMeta(second)).toBe('Body')
   })
 })
