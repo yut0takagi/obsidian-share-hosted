@@ -1,5 +1,9 @@
 # Share Hosted — Obsidian plugin
 
+![Downloads](https://raw.githubusercontent.com/yut0takagi/obsidian-share-hosted/main/.github/stats/badge.svg)
+
+![Download history](https://raw.githubusercontent.com/yut0takagi/obsidian-share-hosted/main/.github/stats/downloads.svg)
+
 Share Obsidian notes with three audience modes (Org / Allowlist / Public). **No Cloudflare setup required** — just sign in with your email.
 
 ## How it works
