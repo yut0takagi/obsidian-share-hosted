@@ -64,11 +64,15 @@ describe('markdownToHtml: Obsidian image embeds', () => {
     expect(markdownToHtml('![[Shot.JPG#center]]')).toContain('<img src="Shot.JPG" alt="Shot.JPG">')
   })
 
-  it('shows other embeds (notes, SVG, PDF) as plain text without the "!"', () => {
+  it('shows other embeds (notes, PDF) as plain text without the "!"', () => {
     const note = markdownToHtml('![[Other Note]]')
     expect(note).toContain('<span class="wikilink-dead">Other Note</span>')
     expect(note).not.toContain('!')
-    expect(markdownToHtml('![[diagram.svg]]')).toContain('<span class="wikilink-dead">diagram.svg</span>')
+    expect(markdownToHtml('![[paper.pdf]]')).toContain('<span class="wikilink-dead">paper.pdf</span>')
+  })
+
+  it('renders SVG embeds as images', () => {
+    expect(markdownToHtml('![[diagram.svg]]')).toContain('<img src="diagram.svg" alt="diagram.svg">')
   })
 
   it('leaves standard Markdown images alone', () => {

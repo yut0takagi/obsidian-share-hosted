@@ -45,13 +45,22 @@ describe('ImageUploader', () => {
     expect(ImageUploader.rewriteImageSrcs(html, map)).toContain(`src="/a/${hash}.png"`)
   })
 
-  it('skips SVG files, which the Worker no longer accepts', async () => {
+  it('uploads SVG files as image/svg+xml (the Worker serves them sandboxed)', async () => {
     const app = fakeApp([file('logo.svg')])
     const api = fakeApi()
     const { map, skipped } = await new ImageUploader(app as any, api as any).uploadImagesIn('<img src="logo.svg" alt="">', 'Note.md')
+    expect(api.uploadAsset).toHaveBeenCalledTimes(1)
+    expect(api.uploadAsset.mock.calls[0][3]).toBe('image/svg+xml')
+    expect(map.size).toBe(1)
+    expect(skipped).toEqual([])
+  })
+
+  it('skips types the Worker does not take', async () => {
+    const app = fakeApp([file('scan.bmp')])
+    const api = fakeApi()
+    const { skipped } = await new ImageUploader(app as any, api as any).uploadImagesIn('<img src="scan.bmp" alt="">', 'Note.md')
     expect(api.uploadAsset).not.toHaveBeenCalled()
-    expect(map.size).toBe(0)
-    expect(skipped).toEqual(['logo.svg'])
+    expect(skipped).toEqual(['scan.bmp'])
   })
 
   it('skips images over the upload limit instead of failing the share', async () => {

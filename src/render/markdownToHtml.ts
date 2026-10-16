@@ -25,8 +25,8 @@ function obsidianWikilinks(md: MarkdownIt): void {
   })
 }
 
-// Image types the Worker stores. Other embeds (notes, SVG, PDF, ...) render as plain text.
-const EMBED_IMAGE_RE = /\.(png|jpe?g|gif|webp)$/i
+// Image types the Worker stores. Other embeds (notes, PDF, ...) render as plain text.
+const EMBED_IMAGE_RE = /\.(png|jpe?g|gif|webp|svg)$/i
 const SIZE_RE = /^(\d+)(?:x(\d+))?$/
 
 function encodeVaultPath(path: string): string {

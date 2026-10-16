@@ -13,13 +13,14 @@ export interface UploadResult {
   skipped: string[]
 }
 
-// Types the Worker accepts. SVG is refused there because it can carry script.
+// Types the Worker accepts. It serves SVG with a sandboxing CSP, so scripts in one cannot run.
 const EXT_TO_CT: Record<string, string> = {
   png: 'image/png',
   jpg: 'image/jpeg',
   jpeg: 'image/jpeg',
   gif: 'image/gif',
   webp: 'image/webp',
+  svg: 'image/svg+xml',
 }
 
 export const MAX_UPLOAD_BYTES = 20 * 1024 * 1024
