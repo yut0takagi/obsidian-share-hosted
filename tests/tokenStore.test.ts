@@ -49,6 +49,29 @@ describe('TokenStore with SecretStorage', () => {
     expect(settings.apiToken).toBe('s_legacy')
   })
 
+  it('still uses the data.json token when the move failed, instead of looking signed out', async () => {
+    const secrets = new FakeSecrets()
+    secrets.setSecret = () => { throw new Error('locked') }
+    const store = new TokenStore(secrets, { apiToken: 's_legacy' }, async () => {})
+    await store.migrate()
+    expect(store.get()).toBe('s_legacy')
+  })
+
+  it('prefers SecretStorage when both hold a token', () => {
+    const secrets = new FakeSecrets()
+    secrets.setSecret(TOKEN_SECRET_ID, 's_secret')
+    expect(new TokenStore(secrets, { apiToken: 's_legacy' }, async () => {}).get()).toBe('s_secret')
+  })
+
+  it('clears both places on sign-out', async () => {
+    const secrets = new FakeSecrets()
+    secrets.setSecret = () => { throw new Error('locked') }
+    const settings: { apiToken?: string } = { apiToken: 's_legacy' }
+    const store = new TokenStore(secrets, settings, async () => {})
+    await store.clear().catch(() => {})
+    expect(store.get()).toBe('')
+  })
+
   it('writes new tokens only to SecretStorage', async () => {
     const secrets = new FakeSecrets()
     const settings: { apiToken?: string } = {}

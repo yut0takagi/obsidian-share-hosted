@@ -28,8 +28,9 @@ export class TokenStore {
   }
 
   get(): string {
-    if (this.secrets) return this.secrets.getSecret(TOKEN_SECRET_ID) ?? ''
-    return this.settings.apiToken ?? ''
+    // A token still in data.json (the move failed) counts, rather than looking signed out.
+    const secret = this.secrets ? this.secrets.getSecret(TOKEN_SECRET_ID) : null
+    return secret || this.settings.apiToken || ''
   }
 
   async set(token: string): Promise<void> {
@@ -46,11 +47,12 @@ export class TokenStore {
   }
 
   async clear(): Promise<void> {
-    // SecretStorage has no delete; an empty value means "signed out".
-    if (this.secrets) this.secrets.setSecret(TOKEN_SECRET_ID, '')
-    if (this.secrets && !('apiToken' in this.settings)) return
-    if (this.secrets) delete this.settings.apiToken
-    else this.settings.apiToken = ''
+    if (this.secrets) {
+      // SecretStorage has no delete; an empty value means "signed out".
+      try { this.secrets.setSecret(TOKEN_SECRET_ID, '') } catch (e) { console.error('[share-hosted] could not clear SecretStorage', e) }
+    }
+    if (!('apiToken' in this.settings)) return
+    delete this.settings.apiToken
     await this.save()
   }
 
