@@ -4,10 +4,10 @@ export const WORKER_URL = 'https://obsidian-share-hosted-worker.takachanman-jp.w
 
 export const DEFAULT_SETTINGS: ShareHostedSettings = {
   workerUrl: WORKER_URL,
-  apiToken: '',
   signedInEmail: '',
   ownerName: '',
-  orgDomain: '',
+  serverOrg: null,
+  pendingSignIn: null,
   defaultExpiry: '7d',
   defaultMode: 'org',
 }

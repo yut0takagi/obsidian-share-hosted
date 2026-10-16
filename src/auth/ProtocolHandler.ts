@@ -1,19 +1,22 @@
 import { Notice } from 'obsidian'
 import type ShareHostedPlugin from '../../main'
 import { syncProfile } from './ProfileSync'
+import { evaluateAuthCallback } from './callback'
 
 export function registerAuthCallback(plugin: ShareHostedPlugin): void {
   plugin.registerObsidianProtocolHandler('share-hosted/auth-callback', async (params) => {
-    const apiToken = params.api_token
-    const email = params.email
-    if (!apiToken || !email) {
-      new Notice('Sign in failed: missing token or email')
+    const result = evaluateAuthCallback(params, plugin.settings.pendingSignIn, Date.now())
+    if (!result.ok) {
+      // The token is not stored: only the sign-in started from this device may complete.
+      new Notice(result.message, 10000)
       return
     }
-    plugin.settings.apiToken = apiToken
-    plugin.settings.signedInEmail = email
+    plugin.settings.pendingSignIn = null
+    plugin.settings.signedInEmail = result.email
+    plugin.settings.serverOrg = null
     await plugin.saveSettings()
-    new Notice(`Signed in as ${email}`)
+    await plugin.tokens.set(result.token)
+    new Notice(`Signed in as ${result.email}`)
     try {
       await syncProfile(plugin)
     } catch (e) {
